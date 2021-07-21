@@ -128,7 +128,9 @@
     </script>
 			
 		</section>
-		<section class="sec2"></section>
+		<section class="sec2">
+			<a href="/delivery/requestList?boardId=3">피식</a>
+		</section>
 		<section class="sec3"></section>
 	</body>
 </html>

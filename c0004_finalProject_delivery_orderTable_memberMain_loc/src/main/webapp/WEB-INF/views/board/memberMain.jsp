@@ -66,7 +66,9 @@
 			
 		</section>
 		
-		<section class="sec2"></section>
+		<section class="sec2">
+			<form action=""></form>		
+		</section>
 		
 		<section class="sec3">
 		</section>
