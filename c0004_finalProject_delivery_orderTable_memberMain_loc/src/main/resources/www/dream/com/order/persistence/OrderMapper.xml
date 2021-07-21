@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="www.dream.com.order.persistence.OrderMapper">
+	<resultMap type="www.dream.com.order.model.OrderList" id="orderMap"
+	extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+		<id property="id" column="order_id"></id>
+		<result property="msg" column="order_msg"></result>
+		
+		<collection property="listDetailOrder" columnPrefix="op_" 
+			resultMap="detailOrderMap">
+		</collection>
+	</resultMap>
+	
+	<resultMap type="www.dream.com.order.model.DetailOrder" id="detailOrderMap">
+		<id property="id" column="detail_order_id"></id>
+		<result property="pdtName" column="product_name"></result>
+		<result property="pdtCnt" column="product_cnt"></result>
+		<result property="pdtPrice" column="product_price"></result>
+	</resultMap>
+
+	<!-- public List<OrderList> getList(); -->
+	<select id="getList" resultMap="orderMap">
+	<![CDATA[
+	select o.*,
+	       d.detail_order_id op_detail_order_id, d.product_name op_product_name,
+	        d.product_cnt op_product_cnt, d.product_price op_product_price
+	  from b_orderList o left outer join b_detail_order d on o.detail_order_id = d.detail_order_id
+	]]>
+	</select>
+</mapper>

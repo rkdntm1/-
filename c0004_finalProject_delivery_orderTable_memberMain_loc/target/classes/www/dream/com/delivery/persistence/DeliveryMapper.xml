@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+	<mapper namespace="www.dream.com.delivery.persistence.DeliveryMapper">
+		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="dmRequest">
+			<id property="reqId" column="req_id"></id>
+			<result property="storeId" column="store_id"></result>
+			<result property="memberId" column="member_id"></result>
+			<result property="reqState" column="req_state"></result>
+			<result property="startLat" column="req_start_lat"></result>
+			<result property="startLng" column="req_start_lng"></result>
+			<result property="startAddr" column="req_start_addr"></result>
+			<result property="endLat" column="req_end_lat"></result>
+			<result property="endLng" column="req_end_lng"></result>
+			<result property="endAdd" column="req_end_addr"></result>
+			<result property="order1" column="req_order1"></result>
+	</resultMap>
+
+<!-- public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);-->
+	<select id="getList" resultMap="dmRequest">
+	<![CDATA[
+	select * 
+	  from b_request, b_board
+	 where id = #{boardId}
+	]]>
+	</select>
+
+	<!-- 	public int insertRequest(@Param("requestId") String requestId, @Param("request")  DeliveryRequestVO request);
+	 -->
+	<insert id="insert">
+		<selectKey keyProperty="request.reqId" order="BEFORE"
+			resultType="string">
+			select get_id(seq_req_id.nextval) from dual
+		</selectKey>
+		insert into b_request(req_id, user_id, req_start_latitude, req_start_longitude, req_start_address, req_end_latitude, req_end_longitude, req_end_address, 
+req_order1, req_order2, req_order3, req_order4, req_total_price, info)
+		values(#{requestId}, #{request.userId}, #{request.startLatitude}, #{request.startLongitude}, #{request.startAddress}, #{request.endLatitude}, #{request.endLongitude}, 
+		#{request.endAddress}, #{request.order1}, #{request.order2}, #{request.order3}, #{request.order4}, #{request.totalPrice}, #{request.info})
+	</insert>
+	
+	<!-- 
+	public int deleteReplyById(String id);
+	특정 게시글에 달린 모든 댓글을 한번에 지웁니다. start with connected by Query 에 비하여 성능이 높습니다.
+	
+		<delete id="deleteReplyById">
+		delete from b_reply where id like #{id} || '%'
+		</delete>
+	
+	 -->
+
+	
+</mapper>
