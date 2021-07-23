@@ -34,7 +34,7 @@
 	<![CDATA[
 	SELECT DISTINCT req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr, req_order1
 			   FROM (select * 
-					   from b_request r, b_location l
+					   from b_request r, b_location l, b_party p
 					  where l.user_id = #{curUser.userId}
 					  	and req_state = 'pending'
 					    and r.req_start_lat >= (select info 
@@ -56,17 +56,13 @@
 	]]>
 	</select>
 	
-	<!-- 	public int insertRequest(@Param("requestId") String requestId, @Param("request")  DeliveryRequestVO request);
-	 -->
-	<insert id="insert">
-		<selectKey keyProperty="request.reqId" order="BEFORE"
-			resultType="string">
+	<!-- public int registerRequest(@Param("order") OrderList order);-->
+	<insert id="registerRequest">
+		<selectKey keyProperty="order.id" order="BEFORE" resultType="string">
 			select get_id(seq_req_id.nextval) from dual
 		</selectKey>
-		insert into b_request(req_id, user_id, req_start_latitude, req_start_longitude, req_start_address, req_end_latitude, req_end_longitude, req_end_address, 
-req_order1, req_order2, req_order3, req_order4, req_total_price, info)
-		values(#{requestId}, #{request.userId}, #{request.startLatitude}, #{request.startLongitude}, #{request.startAddress}, #{request.endLatitude}, #{request.endLongitude}, 
-		#{request.endAddress}, #{request.order1}, #{request.order2}, #{request.order3}, #{request.order4}, #{request.totalPrice}, #{request.info})
+		insert into b_request(req_id, store_id, member_id, req_state ,req_order1)
+		values(#{order.id}, #{order.storeId}, #{order.memberId}, 'pending', #{order.msg})
 	</insert>
 	
 	

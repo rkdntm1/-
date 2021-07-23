@@ -4,25 +4,45 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import www.dream.com.delivery.model.DeliveryRequestVO;
 import www.dream.com.delivery.persistence.DeliveryMapper;
+import www.dream.com.party.model.Party;
 
 @Service
 public class DeliveryService {
-	// @Autowired
-	// private ReplyMapper replyMapper;
-
 	@Autowired
 	private DeliveryMapper deliveryMapper;
-
+	
+	private static final double radiusLatitude = 0.009094;
+	private static final double radiusLongitude = 0.011268;
+	
 	public List<DeliveryRequestVO> getList(int boardId){
 		return deliveryMapper.getList(boardId);
 	}
 	
+	public List<DeliveryRequestVO> searchRequest(Party curUser) {
+		return deliveryMapper.searchRequest(curUser, radiusLatitude, radiusLongitude);
+	}
+	
+	
 	public int insertRequest(String requestId, DeliveryRequestVO request) {
 		return deliveryMapper.insertRequest(requestId, request);
 	}
+
+	//reqId값으로 request 객체 조회
+	public DeliveryRequestVO findRequestById(String reqId) {
+		return (DeliveryRequestVO) deliveryMapper.findRequestById(reqId);
+	}
+	
+	/** 게시글 수정 처리 */
+	@Transactional
+	public DeliveryRequestVO updateRequest(DeliveryRequestVO request) {
+		return deliveryMapper.updateRequest(request);
+	}
+	
+	
 
 	// *****************************************************************************************************************
 

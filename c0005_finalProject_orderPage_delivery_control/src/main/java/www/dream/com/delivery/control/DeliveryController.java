@@ -3,6 +3,7 @@ package www.dream.com.delivery.control;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,22 +18,21 @@ import www.dream.com.delivery.model.DeliveryRequestVO;
 import www.dream.com.delivery.service.DeliveryService;
 import www.dream.com.framework.springSecurityAdapter.CustomUser;
 import www.dream.com.party.model.Party;
-
 @Controller
 @RequestMapping("/delivery/*")
 public class DeliveryController {
 	@Autowired
 	private DeliveryService deliveryService;
 
-	@GetMapping(value="requestList")
-	public void requestList(@RequestParam("boardId") int boardId, Model model) {
-		model.addAttribute("requestList", deliveryService.getList(boardId));
-	}
+//	@GetMapping(value="requestList")
+//	public void requestList(@RequestParam("boardId") int boardId, Model model) {
+//		model.addAttribute("requestList", deliveryService.getList(boardId));
+//	}
 	
 	/** 1. 라이이더의 위치를 기준으로 반경 1km안 그리고 req_state가 pending인 요청들을 탐색한다.
 	 *  2. 조회된 요청들중 1건 랜덤으로 라이더에게 할당한다.
 	 */
-	@GetMapping(value="searchRequest")
+	@GetMapping(value="requestList")
 	public void searchRequestByLocation(@AuthenticationPrincipal Principal principal, Model model) {
 		Party curUser = null;
 		if(principal != null){
@@ -40,8 +40,16 @@ public class DeliveryController {
 			CustomUser cu = (CustomUser) upat.getPrincipal();
 			curUser = cu.getCurUser();	
 		}
-		model.addAttribute("searchRequest", deliveryService.searchRequest(curUser));
+		model.addAttribute("requestList", deliveryService.searchRequest
+				(curUser));
 	};
+	
+	
+	@GetMapping(value="rider2Nav")
+	public void searchRequestByLocation(@RequestParam("reqId") int reqId, Model model) {
+		model.addAttribute("reqId", reqId);
+	};
+	
 	
 	/** 1.가게가 배달요청을 누르면 riderId는 제외하고 모든 데이터가 request테이블에 다 등록되어야한다. 
 	 *  2. req_state 는 pending(배달대기)로 등록되어야 한다.
@@ -84,7 +92,9 @@ public class DeliveryController {
 	 *  3. 라이더가 배달취소버튼을 누르면 req_state가 cancelled로 업데이트 되어야 한다. 
 	 * */
 	@PostMapping(value="updateRequest")
-	public String modifyPost(@RequestParam("boardId") int boardId, DeliveryRequestVO reqId, RedirectAttributes rttr) {
+	@PreAuthorize("principal.username == #writerId")
+	public String modifyPost(@RequestParam("boardId") int boardId, DeliveryRequestVO reqId, 
+			String writerId, RedirectAttributes rttr) {
 		
 		deliveryService.updateRequest(reqId);
 		

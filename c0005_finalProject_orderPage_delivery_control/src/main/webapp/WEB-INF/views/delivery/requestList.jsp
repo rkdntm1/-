@@ -9,10 +9,13 @@
 		<script	src="https://code.jquery.com/jquery-3.6.0.js"></script>
 	</head>
 	<body>
-		<c:forEach items="${requestList}" var="request">
-			<tr>
-				${request}				
-			</tr>
-		</c:forEach>
+		<form id="frmPost" method="get" action="/delivery/rider2Nav">
+			
+			<c:forEach items="${requestList}" var="reqlist" varStatus="status">
+				<input id="request${status.index}" name="requestId" value="${reqlist}" readonly></br>
+			</c:forEach>
+		</form>
+			<input id="request${status.index}" type="button" value="${reqlist}" readonly></br>
+			<input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'>
 	</body>
 </html>

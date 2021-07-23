@@ -109,3 +109,6 @@ create table b_location(
 	upt_dt				timestamp		default sysdate not null,	--수정시점
 	primary key (user_id, location_type)
 );
+
+
+#{party.location.info} #{party.location.info}

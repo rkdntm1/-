@@ -4,10 +4,6 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import www.dream.com.bulletinBoard.model.BoardVO;
-import www.dream.com.bulletinBoard.model.PostVO;
-import www.dream.com.bulletinBoard.model.ReplyVO;
-import www.dream.com.common.dto.Criteria;
 import www.dream.com.delivery.model.DeliveryRequestVO;
 import www.dream.com.party.model.Party;
 
@@ -16,14 +12,20 @@ public interface DeliveryMapper {
 	//List
 	public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);
 	
+	
+	public List<DeliveryRequestVO> searchRequest(@Param("curUser") Party curUser, 
+			@Param("radiusLatitude")double radiusLatitude, @Param("radiusLongitude") double radiusLongitude); 
+	
+	
 	/** id 값으로 Post 객체 조회 */
 	public int insertRequest(@Param("requestId") String requestId, @Param("request")  DeliveryRequestVO request);
-	
-	
+
+	public DeliveryRequestVO findRequestById(String reqId);
+
+	public DeliveryRequestVO updateRequest(DeliveryRequestVO request);
 	
 	
 	//**********************************************************************************************************************************************
-	
 	
 	//LRCUD
 		/** -------------- 게시글 처리 함수 정의 영역  --------------------- */

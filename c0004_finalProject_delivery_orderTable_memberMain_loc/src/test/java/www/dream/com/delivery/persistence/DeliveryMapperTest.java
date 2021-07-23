@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import www.dream.com.party.model.Party;
+import www.dream.com.party.model.Rider;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("file:src\\main\\webapp\\WEB-INF\\spring\\root-context.xml")
@@ -18,7 +21,7 @@ public class DeliveryMapperTest {
 	@Autowired
 	private DeliveryMapper delMapper;
 
-	@Test
+	//@Test
 	public void test000GetList() {
 		assertNotNull(delMapper);
 		try {
@@ -30,6 +33,19 @@ public class DeliveryMapperTest {
 		}
 	}
 
+		@Test	
+		public void test002searchRequest() {
+			Rider rider = new Rider();
+			rider.setUserId("riderthirsty");
+			try {
+				delMapper.searchRequest(rider, 0.009094, 0.011268).forEach(board->{
+					System.out.println(board);
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	
 	//@Test
 //	public void test001GetBoard() {
 //		assertNotNull(boardMapper);

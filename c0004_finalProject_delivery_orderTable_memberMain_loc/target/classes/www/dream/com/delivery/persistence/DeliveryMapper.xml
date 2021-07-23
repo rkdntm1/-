@@ -8,6 +8,7 @@
 			<id property="reqId" column="req_id"></id>
 			<result property="storeId" column="store_id"></result>
 			<result property="memberId" column="member_id"></result>
+			<result property="riderId" column="rider_id"></result>
 			<result property="reqState" column="req_state"></result>
 			<result property="startLat" column="req_start_lat"></result>
 			<result property="startLng" column="req_start_lng"></result>
@@ -26,7 +27,35 @@
 	 where id = #{boardId}
 	]]>
 	</select>
-
+	
+<!-- public List<DeliveryRequestVO> searchRequest(@Param("curUser") Party curUser, 
+			@Param("radiusLatitude")double radiusLatitude, @Param("radiusLongitude") double radiusLongitude);  -->
+			<select id="searchRequest" resultMap="dmRequest">
+	<![CDATA[
+	SELECT DISTINCT req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr, req_order1
+			   FROM (select * 
+					   from b_request r, b_location l
+					  where l.user_id = #{curUser.userId}
+					  	and req_state = 'pending'
+					    and r.req_start_lat >= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'latitude')  -  #{radiusLatitude}
+					    and r.req_start_lat <= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'latitude') + #{radiusLatitude}
+					    and r.req_start_lng >= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'logitude') - #{radiusLongitude}
+					    and r.req_start_lng <= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'logitude') + #{radiusLongitude}) 
+	]]>
+	</select>
+	
 	<!-- 	public int insertRequest(@Param("requestId") String requestId, @Param("request")  DeliveryRequestVO request);
 	 -->
 	<insert id="insert">
@@ -40,6 +69,26 @@ req_order1, req_order2, req_order3, req_order4, req_total_price, info)
 		#{request.endAddress}, #{request.order1}, #{request.order2}, #{request.order3}, #{request.order4}, #{request.totalPrice}, #{request.info})
 	</insert>
 	
+	
+	
+	<!-- public DeliveryRequestVO findRequestById(String reqId); -->
+ 	<select id="findRequestById" resultMap="dmRequest">
+		<![CDATA[
+			select req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr, req_order1
+			  from b_request r, b_party p
+		     where r.req_id = #{reqId} 
+		       and r.rider_id = p.user_id 
+		]]>
+		</select>
+		
+		
+		
+		<!-- public DeliveryRequestVO updateRequest(DeliveryRequestVO request); -->
+		<update id="updateRequest">
+		
+		
+		</update>
+		
 	<!-- 
 	public int deleteReplyById(String id);
 	특정 게시글에 달린 모든 댓글을 한번에 지웁니다. start with connected by Query 에 비하여 성능이 높습니다.

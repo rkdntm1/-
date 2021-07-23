@@ -130,7 +130,7 @@ public class PartyController implements AuthenticationSuccessHandler, AccessDeni
 			response.sendRedirect("/board/storeMain");
 			return;
 		}else if (roleNames.contains("Rider")) {
-			response.sendRedirect("delivery/requestList?boardId=3");
+			response.sendRedirect("delivery/requestList");
 			return;
 		}
 		response.sendRedirect("/");

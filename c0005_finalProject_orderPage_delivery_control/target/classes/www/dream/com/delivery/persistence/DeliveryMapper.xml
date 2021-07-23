@@ -4,7 +4,8 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 	<mapper namespace="www.dream.com.delivery.persistence.DeliveryMapper">
-		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="dmRequest">
+		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="dmRequest"
+			extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
 			<id property="reqId" column="req_id"></id>
 			<result property="storeId" column="store_id"></result>
 			<result property="memberId" column="member_id"></result>
@@ -21,11 +22,11 @@
 
 <!-- public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);-->
 	<select id="getList" resultMap="dmRequest">
-	<![CDATA[
-	select * 
-	  from b_request, b_board
-	 where id = #{boardId}
-	]]>
+		<![CDATA[
+		select * 
+		  from b_request, b_board
+		 where id = #{boardId}
+		]]>
 	</select>
 	
 <!-- public List<DeliveryRequestVO> searchRequest(@Param("curUser") Party curUser, 
@@ -48,11 +49,11 @@
 					    and r.req_start_lng >= (select info 
 					                              from b_location l
 					                             where l.user_id = #{curUser.userId}
-					                               and location_type = 'logitude') - #{radiusLongitude}
+					                               and location_type = 'longitude') - #{radiusLongitude}
 					    and r.req_start_lng <= (select info 
 					                              from b_location l
 					                             where l.user_id = #{curUser.userId}
-					                               and location_type = 'logitude') + #{radiusLongitude}) 
+					                               and location_type = 'longitude') + #{radiusLongitude}) 
 	]]>
 	</select>
 	
@@ -82,11 +83,12 @@ req_order1, req_order2, req_order3, req_order4, req_total_price, info)
 		</select>
 		
 		
-		
-		<!-- public DeliveryRequestVO updateRequest(DeliveryRequestVO request); -->
+	<!-- public DeliveryRequestVO updateRequest(DeliveryRequestVO request); -->
 		<update id="updateRequest">
-		
-		
+			update b_request
+	 		   set req_state = #{request.reqState},
+	      			  upt_dt = sysdate
+	 		 where rider_id = #{request.riderId}
 		</update>
 		
 	<!-- 
