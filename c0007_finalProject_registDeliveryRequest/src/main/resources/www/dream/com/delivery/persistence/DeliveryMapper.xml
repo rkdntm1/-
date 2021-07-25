@@ -16,7 +16,7 @@
 			<result property="endLat" column="req_end_lat"></result>
 			<result property="endLng" column="req_end_lng"></result>
 			<result property="endAdd" column="req_end_addr"></result>
-			<result property="order1" column="req_order1"></result>
+			<result property="orderId" column="order_id"></result>
 	</resultMap>
 
 <!-- public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);-->
@@ -57,12 +57,51 @@
 	</select>
 	
 	<!-- public int registerRequest(@Param("order") OrderList order);-->
-	<insert id="registerRequest">
-		<selectKey keyProperty="order.id" order="BEFORE" resultType="string">
-			select get_id(seq_req_id.nextval) from dual
-		</selectKey>
-		insert into b_request(req_id, store_id, member_id, req_state ,req_order1)
-		values(#{order.id}, #{order.storeId}, #{order.memberId}, 'pending', #{order.msg})
+	<insert id="registerRequest">		
+		insert into b_request(req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr)
+			values(#{order.id}, #{order.storeId}, #{order.memberId}, 'pending', (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.member_id = #{order.memberId}
+   and o.member_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'latitude'), (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.member_id = #{order.memberId}
+   and o.member_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'longitude'), (
+select distinct cp.info
+  from b_orderList o, b_party p, b_contact_point cp
+ where o.order_id = #{order.id}
+   and o.member_id = #{order.memberId}
+   and o.member_id = p.user_id
+   and p.user_id = cp.user_id   
+   and cp.contact_point_type = 'address'), (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.store_id = #{order.storeId}
+   and o.store_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'latitude'), (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.store_id = #{order.storeId}
+   and o.store_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'longitude'), (
+select distinct cp.info
+  from b_orderList o, b_party p, b_contact_point cp
+ where o.order_id = #{order.id}
+   and o.store_id = #{order.storeId}
+   and o.store_id = p.user_id
+   and p.user_id = cp.user_id   
+   and cp.contact_point_type = 'address'))
 	</insert>
 	
 	

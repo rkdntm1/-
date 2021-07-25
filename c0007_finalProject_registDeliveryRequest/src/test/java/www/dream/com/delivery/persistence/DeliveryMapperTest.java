@@ -39,7 +39,6 @@ public class DeliveryMapperTest {
 			order.setMemberId("memberthirsty");
 			order.setStoreId("storethirsty");
 			order.setMsg("뀨");
-			System.out.println(delMapper.registerRequest(order));
 		}
 	
 

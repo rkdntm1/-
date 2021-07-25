@@ -43,8 +43,6 @@ public class DeliveryService {
 		return deliveryMapper.updateRequest(request);
 	}
 
-	
-	
 
 	// *****************************************************************************************************************
 

@@ -53,19 +53,19 @@ public class DeliveryController {
 	 *  3. req_start_lat, req_start_lang, req_start_addr는 storeId로부터 갖고온다.
 	 *  4. req_end_lat, req_end_lang, r	eq_end_addr는 memberId로부터 갖고온다.
 	 * */
-	@GetMapping(value="registerRequest")
-	//@PreAuthorize("isAuthenticated()") 
-	public void registerPost(OrderList orderList, Model model) {
-		deliveryService.registerRequest(orderList);
-//		System.out.println("성공");
+//	@GetMapping(value="registerRequest")
+//	//@PreAuthorize("isAuthenticated()") 
+//	public void registerPost(OrderList orderList, Model model) {
 //		deliveryService.registerRequest(orderList);
-//		model.addAttribute("boardId", boardId);
-	}	
+////		System.out.println("성공");
+////		deliveryService.registerRequest(orderList);
+////		model.addAttribute("boardId", boardId);
+//	}	
 
-	@PostMapping(value="registerPost")
+	@PostMapping(value="registerRequest")
 	//@PreAuthorize("isAuthenticated()")
-	public String registerPost(@AuthenticationPrincipal Principal principal,
-			@RequestParam("boardId") int boardId, DeliveryRequestVO newRequest, RedirectAttributes rttr) {
+	public String registerPost(OrderList order, RedirectAttributes rttr) {
+		deliveryService.registerRequest(order);
 //		BoardVO board = new BoardVO(boardId);
 //		UsernamePasswordAuthenticationToken upat = (UsernamePasswordAuthenticationToken) principal;
 //		CustomUser cu = (CustomUser) upat.getPrincipal();
@@ -77,7 +77,7 @@ public class DeliveryController {
 //		rttr.addFlashAttribute("result", newPost.getId());
 //		
 //		//listBySearch로 목록 조회하면 어떤 단점이 있을까? 검색한 단어와 상관성이 없는 신규 게시글을 볼 수 없다.
-		return "redirect:/post/listBySearch?boardId=" + boardId;
+		return "redirect:/board/storeMain";
 	}
 	
 	@GetMapping(value= "updateRequest")

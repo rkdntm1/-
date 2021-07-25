@@ -20,11 +20,12 @@
 	</head>
 	<body>
 	
-				<form action="/delivery/registerRequest" method="get">
+				<form action="/delivery/registerRequest" method="post">
 					<input type="text" name="id" value="${order.id}">
 					<input type="text" name="storeId" value="${order.storeId}">
 					<input type="text" name="memberId" value="${order.memberId}">
 					<input type="text" name="msg" value="${order.msg}">
+					<input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'>
 					<button type="submit" class="btn btn-secondary"> 수락</button>
 				</form>
 						
