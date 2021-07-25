@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+	<mapper namespace="www.dream.com.delivery.persistence.DeliveryMapper">
+		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="dmRequest"
+		extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+			<id property="reqId" column="req_id"></id>
+			<result property="storeId" column="store_id"></result>
+			<result property="memberId" column="member_id"></result>
+			<result property="riderId" column="rider_id"></result>
+			<result property="reqState" column="req_state"></result>
+			<result property="startLat" column="req_start_lat"></result>
+			<result property="startLng" column="req_start_lng"></result>
+			<result property="startAddr" column="req_start_addr"></result>
+			<result property="endLat" column="req_end_lat"></result>
+			<result property="endLng" column="req_end_lng"></result>
+			<result property="endAdd" column="req_end_addr"></result>
+			<result property="orderId" column="order_id"></result>
+	</resultMap>
+
+<!-- public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);-->
+	<select id="getList" resultMap="dmRequest">
+	<![CDATA[
+	select * 
+	  from b_request, b_board
+	 where id = #{boardId}
+	]]>
+	</select>
+	
+<!-- public List<DeliveryRequestVO> searchRequest(@Param("curUser") Party curUser, 
+			@Param("radiusLatitude")double radiusLatitude, @Param("radiusLongitude") double radiusLongitude);  -->
+			<select id="searchRequest" resultMap="dmRequest">
+	<![CDATA[
+	SELECT DISTINCT req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr, order_id, reg_dt, upt_dt
+			   FROM (select r.*, l.reg_dt rider_reg_dt, l.upt_dt rider_upt_dt 
+					   from b_request r, b_location l, b_party p
+					  where l.user_id = #{curUser.userId}
+					  	and req_state = 'pending'
+					    and r.req_start_lat >= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'latitude')  -  #{radiusLatitude}
+					    and r.req_start_lat <= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'latitude') + #{radiusLatitude}
+					    and r.req_start_lng >= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'longitude') - #{radiusLongitude}
+					    and r.req_start_lng <= (select info 
+					                              from b_location l
+					                             where l.user_id = #{curUser.userId}
+					                               and location_type = 'longitude') + #{radiusLongitude}) 
+	]]>
+	</select>
+	
+	<!-- public List<DeliveryRequestVO> matchingRequest(@Param("curUser") Party curUser); -->
+	<select id="matchingRequest" resultMap="dmRequest">
+		<![CDATA[
+			select *
+			  from b_request 
+		     where rider_id = #{curUser.userId}
+		     and req_state = 'matching'
+		]]>
+	</select>
+	
+	<!-- public int registerRequest(@Param("order") OrderList order);-->
+	<insert id="registerRequest">		
+		insert into b_request(req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr)
+			values(#{order.id}, #{order.storeId}, #{order.memberId}, 'pending', (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.member_id = #{order.memberId}
+   and o.member_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'latitude'), (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.member_id = #{order.memberId}
+   and o.member_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'longitude'), (
+select distinct cp.info
+  from b_orderList o, b_party p, b_contact_point cp
+ where o.order_id = #{order.id}
+   and o.member_id = #{order.memberId}
+   and o.member_id = p.user_id
+   and p.user_id = cp.user_id   
+   and cp.contact_point_type = 'address'), (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.store_id = #{order.storeId}
+   and o.store_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'latitude'), (
+select distinct l.info
+  from b_orderList o, b_party p, b_location l
+ where o.order_id = #{order.id}
+   and o.store_id = #{order.storeId}
+   and o.store_id = p.user_id
+   and p.user_id = l.user_id   
+   and l.location_type = 'longitude'), (
+select distinct cp.info
+  from b_orderList o, b_party p, b_contact_point cp
+ where o.order_id = #{order.id}
+   and o.store_id = #{order.storeId}
+   and o.store_id = p.user_id
+   and p.user_id = cp.user_id   
+   and cp.contact_point_type = 'address'))
+	</insert>
+	
+	
+	
+	<!-- public DeliveryRequestVO findRequestById(String reqId); -->
+ 	<select id="findRequestById" resultMap="dmRequest">
+		<![CDATA[
+			select req_id, store_id, member_id, req_state, req_start_lat, req_start_lng, req_start_addr, req_end_lat, req_end_lng, req_end_addr, order_id
+			  from b_request r, b_party p
+		     where r.req_id = #{reqId} 
+		       and r.rider_id = p.user_id 
+		]]>
+		</select>
+		
+	<!-- public int updateRequest(@Param("requestId") String requestId,@Param("curUser") Party curUser); -->
+	<update id="updateRequest">
+		update b_request
+		  set rider_id = #{curUser.userId},
+		  req_state = 'matching',
+		  upt_dt = sysdate
+		 where req_id = #{requestId}
+	</update>	
+	<!-- 
+	public int deleteReplyById(String id);
+	특정 게시글에 달린 모든 댓글을 한번에 지웁니다. start with connected by Query 에 비하여 성능이 높습니다.
+	
+		<delete id="deleteReplyById">
+		delete from b_reply where id like #{id} || '%'
+		</delete>
+	
+	 -->
+
+	
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="www.dream.com.order.persistence.OrderMapper">
+	<resultMap type="www.dream.com.order.model.OrderList" id="orderMap"
+	extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+		<id property="id" column="order_id"></id>
+		<result property="storeId" column="store_id"></result>
+		<result property="memberId" column="member_id"></result>
+		<result property="msg" column="order_msg"></result>
+		
+		<collection property="listDetailOrder" columnPrefix="op_" 
+			resultMap="detailOrderMap">
+		</collection>
+	</resultMap>
+	
+	<resultMap type="www.dream.com.order.model.DetailOrder" id="detailOrderMap">
+		<id property="id" column="id"></id>
+		<result property="pdtName" column="pdt_name"></result>
+		<result property="pdtCnt" column="pdt_cnt"></result>
+		<result property="pdtPrice" column="pdt_price"></result>
+	
+	</resultMap>
+
+	<!-- public List<OrderList> getList(); -->
+	<select id="getList" resultMap="orderMap">
+	<![CDATA[
+	select o.*,
+	       d.order_id op_order_id, d.pdt_name op_pdt_name,
+	        d.pdt_cnt op_pdt_cnt, d.pdt_price op_pdt_price
+	  from b_orderList o left outer join b_detail_order d on o.order_id = d.order_id
+	]]>
+	</select>
+	
+	<!-- public List<OrderList> getOrderListById(String userId); -->
+	<select id="getOrderListById" resultMap="orderMap">
+	<![CDATA[
+	select o.*,
+	       d.id op_id, d.pdt_name op_pdt_name,
+	        d.pdt_cnt op_pdt_cnt, d.pdt_price op_pdt_price
+	  from b_orderList o left outer join b_detail_order d on o.order_id = d.order_id
+	 where o.store_id = #{userId}
+	]]>
+	</select>
+	
+	<!-- public OrderList findOrderById(String orderId); -->
+	<select id="findOrderById" resultMap="orderMap">
+	<![CDATA[
+	select * 
+	  from b_orderlist
+	 where order_id = #{orderId}
+	]]>
+	</select>
+	
+	
+	
+	
+	
+	<!-- public OrderList getOrderList(); -->
+	<select id="getOrderList" resultMap="orderMap">
+	<![CDATA[
+	select * from b_orderList;
+	]]>
+	</select>
+	
+	<!-- public int insertOrder(@Param("memberId") String memberId,
+			@Param("orderList") OrderList orderList, @Param("detailOrder") DetailOrder detailOrder); -->
+	<insert id="insertOrder">
+		<selectKey keyProperty="orderList.id" order="BEFORE"
+			resultType="string">
+			select get_id(seq_order_id.nextval) from dual
+		</selectKey>
+		insert into b_orderList(order_id, member_id, store_id, order_msg)
+				values (#{orderList.id}, #{memberId}, 'store3', #{orderList.msg})
+	</insert>
+	
+	<!-- public int insertDetailOrder(@Param("memberId") String memberId,
+			@Param("orderList") OrderList orderList, @Param("detailOrder") DetailOrder detailOrder); -->
+	<insert id="insertDetailOrder">
+		<selectKey keyProperty="detailOrder.id" order="BEFORE"
+			resultType="string">
+			select #{orderList.id} || get_id(seq_detail_order_id.nextval) from dual
+		</selectKey>
+		insert into b_detail_order(id, order_id, pdt_name, pdt_cnt, pdt_price)
+				values (#{detailOrder.id}, #{orderList.id}, #{detailOrder.pdtName}, #{detailOrder.pdtCnt}, #{detailOrder.pdtPrice})
+	</insert>		
+</mapper>
