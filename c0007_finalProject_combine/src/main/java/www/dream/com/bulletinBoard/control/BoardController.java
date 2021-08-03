@@ -51,14 +51,12 @@ public class BoardController {
 			curUser = cu.getCurUser();
 		}
 		model.addAttribute("myOrderList", orderService.getOrderListById(curUser.getUserId()));
-		
 	}
+	
 	@GetMapping(value="storeOrderDetail")
 	public void readOrder(@RequestParam("orderId") String orderId, Model model) {
 		model.addAttribute("order", orderService.findOrderById(orderId));
-		
 	}
-	
 	
 	/**-------------라이더 관련 컨트롤러--------------- */
 	@GetMapping(value="riderMain")

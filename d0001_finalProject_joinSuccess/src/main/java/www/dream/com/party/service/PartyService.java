@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import lombok.NoArgsConstructor;
 import www.dream.com.framework.springSecurityAdapter.CustomUser;
 import www.dream.com.party.model.ContactTypeVO;
-import www.dream.com.party.model.Person;
 import www.dream.com.party.model.Party;
+import www.dream.com.party.model.Person;
 import www.dream.com.party.persistence.PartyMapper;
 
 @Service
@@ -45,11 +45,7 @@ public class PartyService implements UserDetailsService {
 	/* Authority 부분 바꾸는중 나중에 Accountability에서 받아와야함 */
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		return null;
+		Person loginParty = partyMapper.findPartyByUserId(username);
+		return loginParty == null ? null : new CustomUser(loginParty);
 	}
-//	@Override
-//	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//		Party loginParty = partyMapper.findPartyByUserId(username);
-//		return loginParty == null ? null : new CustomUser(loginParty);
-//	}
 }

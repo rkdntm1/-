@@ -8,10 +8,10 @@ import www.dream.com.framework.printer.ClassPrintTarget;
 import www.dream.com.framework.printer.PrintTarget;
 @Data
 @NoArgsConstructor
-@ClassPrintTarget
-public class DeliveryRequestVO extends CommonMngVO{
-	@AnchorTarget
-	private String reqId;
+
+//배달 요청건 
+public class DeliveryRequestVO extends DeliveryVO{
+	
 	private String memberId;
 	private String storeId;
 	private String orderContents;

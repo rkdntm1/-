@@ -1,3 +1,4 @@
+
 package www.dream.com.delivery.control;
 
 import java.security.Principal;
@@ -18,17 +19,45 @@ import www.dream.com.delivery.service.DeliveryService;
 import www.dream.com.framework.springSecurityAdapter.CustomUser;
 import www.dream.com.order.model.OrderList;
 import www.dream.com.party.model.Party;
+import www.dream.com.party.service.PartyService;
 
 @Controller
 @RequestMapping("/delivery/*")
 public class DeliveryController {
 	@Autowired
 	private DeliveryService deliveryService;
+	
+	@Autowired
+	private PartyService partyService;
+	
+	//LRCUD
 
-	/** 1. 라이더의 위치를 기준으로 반경 1km안 그리고 req_state가 pending인 요청들을 탐색한다.
+	/**
+	 * deliveryList를 조회한다.
+	 * descrim으로 가게/라이더 구분해서 
+	 * @param principal
+	 * @param model
 	 */
-	@GetMapping(value="requestList")
-	public void requestList(@AuthenticationPrincipal Principal principal, Model model) {
+	@GetMapping(value="deliveryList")
+	public void deliveryList(@AuthenticationPrincipal Principal principal, Model model) {
+		Party curUser = null;
+		if(principal != null){
+			UsernamePasswordAuthenticationToken upat = (UsernamePasswordAuthenticationToken) principal;
+			CustomUser cu = (CustomUser) upat.getPrincipal();
+			curUser = cu.getCurUser();	
+		}
+		model.addAttribute("deliveryRequestList", deliveryService.searchDeliveryList(curUser));
+	}
+	
+	
+
+	/**
+	 * 1.특정 라이더가 할당받은 배달리스트들을 조회 
+	 * @param principal
+	 * @param model
+	 */
+	@GetMapping(value="deliveryRiderList")
+	public void deliveryRiderList(@AuthenticationPrincipal Principal principal, Model model) {
 		Party curUser = null;
 		if(principal != null){
 			UsernamePasswordAuthenticationToken upat = (UsernamePasswordAuthenticationToken) principal;
@@ -36,8 +65,9 @@ public class DeliveryController {
 			curUser = cu.getCurUser();	
 		}
 		
-		model.addAttribute("searchRequest", deliveryService.searchRequest(curUser));
+		model.addAttribute("deliveryRiderList", deliveryService.searchDeliveryRiderList(curUser));
 	}
+	
 	
 	//requestList.jsp에서 누른 request를 없애준다.
 	//b_request req_state Matching으로 바꿔준다.

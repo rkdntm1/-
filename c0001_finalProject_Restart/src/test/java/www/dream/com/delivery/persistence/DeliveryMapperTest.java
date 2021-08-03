@@ -1,16 +1,12 @@
 package www.dream.com.delivery.persistence;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.FixMethodOrder;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import www.dream.com.delivery.model.RiderStatus;
 import www.dream.com.order.model.OrderList;
 import www.dream.com.party.model.Post;
 
@@ -25,19 +21,19 @@ public class DeliveryMapperTest {
 	
 	Post rider = new Post();
 	
-	@Test
-	public void test000GetList() {
-		assertNotNull(delMapper);
-		try {
-			rider.setUserId("rider3");
-			delMapper.matchingRequest(rider,RiderStatus.valueOf("matching")).forEach(board->{
-				System.out.println(board);
-			});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
+//	@Test
+//	public void test000GetList() {
+//		assertNotNull(delMapper);
+//		try {
+//			rider.setUserId("rider3");
+//			delMapper.matchingRequest(rider,RiderStatus.valueOf("matching")).forEach(board->{
+//				System.out.println(board);
+//			});
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
 	//@Test
 	public void test300GetList() {
 			OrderList order = new OrderList();

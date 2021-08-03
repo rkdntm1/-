@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import www.dream.com.delivery.model.DeliveryRequestVO;
-import www.dream.com.delivery.model.RiderStatus;
 import www.dream.com.order.model.OrderList;
 import www.dream.com.party.model.Party;
 
@@ -27,7 +26,7 @@ public interface DeliveryMapper {
 	public int updateRequest(@Param("requestId") String requestId,@Param("curUser") Party curUser);
 
 
-	public List<DeliveryRequestVO> matchingRequest(@Param("curUser") Party curUser, @Param("riderStatus") RiderStatus valueOf);
+	//public List<DeliveryRequestVO> matchingRequest(@Param("curUser") Party curUser, @Param("riderStatus") RiderStatus valueOf);
 	
 	
 	//**********************************************************************************************************************************************

@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import www.dream.com.party.model.Party;
+import www.dream.com.party.model.Person;
 
 /**
  * 본시스템 아키텍쳐는 스프링의 시큐리티 모듈을 활용하여 사용자 인증 및 권한을 처리 중입니다.
@@ -15,16 +16,15 @@ import www.dream.com.party.model.Party;
  * @param authorities
  */
 public class CustomUser extends User {
-	private Party party;
+	private Person party;
 	
 	public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities) {
 		super(username, password, authorities);
 	}
-// 	Authority 주는 과정을 바꾸는중 나중에 다시 줘야함
-//	public CustomUser(Party party) {
-//		this(party.getUserId(), party.getUserPwd(), party.getAuthorityList());
-//		this.party = party;
-//	}
+	public CustomUser(Person party) {
+		this(party.getUserId(), party.getUserPwd(), party.getAuthorityList());
+		this.party = party;
+	}
 	
 	public Party getCurUser() {
 		return party;

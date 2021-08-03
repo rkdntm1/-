@@ -24,9 +24,8 @@ insert into b_party_type(party_type, description)
 	values('Person', '자연인');
 insert into b_party_type(party_type, description)
 	values('Organization', '조직');
-insert into b_party_type(party_type, description)
-	values('Post', '직위');
-
+	
+	
 --user_id, user_pwd, name, birth_dt, sex, enabled, reg_dt, upt_dt, descrim
 create table b_party(
 	--Person과 Organization의 공통 속성 정의 
@@ -116,14 +115,15 @@ insert into b_accountability(owner_id, resp_id, acc_type)
 --user_id, longitude, latitude, reg_dt, latest_dt
 CREATE SEQUENCE seq_location_id START WITH -990000000 MINVALUE -990000000;
 create table b_location(
-	id					varchar2(20) primary key,
-	user_id				varchar2(20) primary key,
+	id					varchar2(20),
+	user_id				varchar2(20) ,
 	longitude			number(10, 7), --위치 정보(경도 위도)
 	latitude			number(10, 7),
 	--언제부터
 	reg_dt				timestamp		default sysdate not null,
 	--언제까지
-	latest_dt 			timestamp		default '9999.12.31'
+	latest_dt 			timestamp		default '9999.12.31',
+	primary key(id, user_id)
 );
 
 insert into b_location(id, user_id,latitude, longitude)

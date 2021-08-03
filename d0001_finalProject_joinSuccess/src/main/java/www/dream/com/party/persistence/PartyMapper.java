@@ -4,10 +4,9 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import www.dream.com.party.model.AuthorityPartyType;
 import www.dream.com.party.model.ContactTypeVO;
-import www.dream.com.party.model.Person;
 import www.dream.com.party.model.Party;
+import www.dream.com.party.model.Person;
 
 /**
  * Mybatis를 활용하여 Party 종류의 객체를 관리하는 인터페이스
@@ -19,7 +18,7 @@ public interface PartyMapper {
 	public List<Party> getList();
 	public int IDDuplicateCheck(@Param("userId") String userId);
 	//개별 객체 조회
-	public Party findPartyByUserId(String userId);
+	public Person findPartyByUserId(String userId);
 	//Insert
 	public int setPwd(Party p);
 	//update

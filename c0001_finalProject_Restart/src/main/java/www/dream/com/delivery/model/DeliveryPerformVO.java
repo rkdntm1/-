@@ -9,11 +9,10 @@ import www.dream.com.framework.printer.AnchorTarget;
 import www.dream.com.framework.printer.ClassPrintTarget;
 @Data
 @NoArgsConstructor
-@ClassPrintTarget
-public class DeliveryVO extends CommonMngVO{
-	@AnchorTarget
+public class DeliveryPerformVO extends DeliveryVO{
 	private String reqId;
 	private String riderId;
-	private String delState;
 	private Date pickupDate;
+	
+	
 }

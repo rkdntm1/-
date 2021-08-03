@@ -1,8 +1,8 @@
 package www.dream.com.delivery.model;
 
 public enum DeliveryStatus {
-// 주문대기, 배송중, 배송완료, 주문취소
-	pending("주문대기"), inTransit("배송중"), delivered("배송완료"), cancelled("주문취소");
+// 배차대기, 배차완료, 배송중, 배송완료, 예외
+	pending("배차대기"), matched("배차완료"), inTransit("배송중"), completed("배송완료"), exception("예외"), cancel("취소");
 
 	private final String value;
 

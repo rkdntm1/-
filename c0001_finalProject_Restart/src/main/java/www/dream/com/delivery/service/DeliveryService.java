@@ -4,10 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import www.dream.com.delivery.model.DeliveryRequestVO;
-import www.dream.com.delivery.model.RiderStatus;
 import www.dream.com.delivery.persistence.DeliveryMapper;
 import www.dream.com.order.model.OrderList;
 import www.dream.com.party.model.Party;
@@ -28,9 +26,9 @@ public class DeliveryService {
 		return deliveryMapper.searchRequest(curUser, radiusLatitude, radiusLongitude);
 	}
 	
-	public List<DeliveryRequestVO> matchingRequest(Party curUser) {
-		return deliveryMapper.matchingRequest(curUser,RiderStatus.valueOf("pending"));
-	}
+//	public List<DeliveryRequestVO> matchingRequest(Party curUser) {
+//		return deliveryMapper.matchingRequest(curUser,RiderStatus.valueOf("pending"));
+//	}
 	
 	public int registerRequest(OrderList order) {
 		return deliveryMapper.registerRequest(order);

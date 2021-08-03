@@ -68,7 +68,7 @@ public class DeliveryController {
 			curUser = cu.getCurUser();	
 		}
 		
-		model.addAttribute("matchingRequest", deliveryService.matchingRequest(curUser));
+		//model.addAttribute("matchingRequest", deliveryService.matchingRequest(curUser));
 	}
 	
 	@GetMapping(value="rider2Nav")

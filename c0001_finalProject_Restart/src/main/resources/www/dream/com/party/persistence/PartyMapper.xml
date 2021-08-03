@@ -9,12 +9,13 @@
 	<resultMap type="www.dream.com.party.model.Party" id="partyMap"
 		extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
 		<id property="userId" column="user_id"></id>
-		<result property="userPwd" column="user_pwd"></result>
 		<result property="name" column="name"></result>
 		<result property="birthDate" column="birth_dt"></result>
-		<result property="male" column="sex"></result>
-		<result property="enabled" column="enabled"></result>
 		<result property="descrim" column="descrim"></result>
+		
+		<association property="location" columnPrefix="lp_"
+			resultMap="www.dream.com.party.persistence.PartyMapper.partyMap">
+		</association>
 		<!-- collection : Master-Detail(1:N) 구조에서 Join Query를 통하여 
 		여러 테이블에 들어 있는 정보를 한번에 받아서 java List 속성에 부품 객체를 만들어 조회하는 방법
 		columnPrefix:각 Table에 들어 있는 컬럼 이름이 중복 될 때 Column Alias를 SQL에서 달고
@@ -24,32 +25,30 @@
 				resultMap="contactPointMap">
 		</collection>
 		
-		<collection property="listLocation" columnPrefix="lp_" 
-				resultMap="locationMap">
-		</collection>
 		
 		<!-- discriminator : 판별자. 상속 광련 활용 -->
 		<discriminator javaType="String" column="descrim">
-			<case value="Admin" resultMap="adminResultMap" />
-			<case value="Rider" resultMap="riderResultMap" />
-			<case value="Member" resultMap="memberResultMap" />
-			<case value="Store" resultMap="storeResultMap" />
+			<case value="Person" resultMap="personResultMap" />
+			<case value="Organization" resultMap="organizationResultMap" />
+			<case value="Post" resultMap="postResultMap" />
 		</discriminator>
 	</resultMap>
 	
 	
-	<resultMap id="adminResultMap"
+	<resultMap id="personResultMap"
+		type="www.dream.com.party.model.Member" extends="partyMap">
+		<result property="userPwd" column="user_pwd"></result>
+		<result property="male" column="sex"></result>
+		<result property="state" column="state"></result>
+	</resultMap>
+	<resultMap id="organizationResultMap"
+		type="www.dream.com.party.model.Rider" extends="partyMap">
+		<result property="storeInfo" column="store_info"></result>
+	</resultMap>
+	<resultMap id="postResultMap"
 		type="www.dream.com.party.model.Admin" extends="partyMap">
 	</resultMap>
-	<resultMap id="riderResultMap"
-		type="www.dream.com.party.model.Rider" extends="partyMap">
-	</resultMap>
-	<resultMap id="memberResultMap"
-		type="www.dream.com.party.model.Member" extends="partyMap">
-	</resultMap>
-	<resultMap id="storeResultMap"
-		type="www.dream.com.party.model.Store" extends="partyMap">
-	</resultMap>
+
 
 	<resultMap type="www.dream.com.party.model.ContactPoint" id="contactPointMap" 
 	    extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
@@ -57,11 +56,8 @@
 		<result property="info" column="info"></result>
 	</resultMap>
 	
-	<resultMap type="www.dream.com.party.model.Location" id="locationMap" 
-	    extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
-		<id property="locationType" column="location_type"></id>
-		<result property="info" column="info"></result>
-	</resultMap>
+	
+	<!-- =========================================================================================================== -->
 
 	<!-- public List<Party> getList(); -->
 	<select id="getList" resultMap="partyMap">

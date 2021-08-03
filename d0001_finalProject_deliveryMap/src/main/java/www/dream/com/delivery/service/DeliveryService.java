@@ -22,9 +22,14 @@ public class DeliveryService {
 		return deliveryMapper.getList(boardId);
 	}
 	
-	public List<DeliveryRequestVO> searchRequest(Party curUser) {
-		return deliveryMapper.searchRequest(curUser, radiusLatitude, radiusLongitude);
+	public List<DeliveryRequestVO> searchDeliveryList(Party curUser) {
+		return deliveryMapper.searchDeliveryRequestList(curUser);
 	}
+	
+	public List<DeliveryRequestVO> searchDeliveryRiderList(Party curUser) {
+		return deliveryMapper.searchDeliveryRiderList(curUser);
+	}
+	
 	
 //	public List<DeliveryRequestVO> matchingRequest(Party curUser) {
 //		return deliveryMapper.matchingRequest(curUser,RiderStatus.valueOf("pending"));
@@ -42,6 +47,7 @@ public class DeliveryService {
 	public int updateRequest(String requestId, Party curUser) {
 		return deliveryMapper.updateRequest(requestId, curUser);
 	}
+
 
 
 	// *****************************************************************************************************************

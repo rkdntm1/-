@@ -44,7 +44,7 @@ public class DicOrderSeedGennerator {
 		try {
 			//총 1500만개 만.....
 			PreparedStatement stmt = 
-					conn.prepareStatement("insert into c_id_seed(seq_id, seed) values(?, ?)");
+					conn.prepareStatement("insert into b_id_seed(seq_id, seed) values(?, ?)");
 			long seqId = 0;
 			char[] chSeed = new char[5];
 			for (int i = 0; i < 1; i++) {

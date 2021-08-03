@@ -10,15 +10,12 @@ create table b_request(
 	req_id					varchar2(20),
 	store_id				varchar2(20),
 	member_id				varchar2(20),
-	rider_id				varchar2(20),
 	req_state				varchar2(10),	-- cancelled : 주문 취소 , delivered : 발송 완료, pending : 주문 대기, in transit : 배송 중
-	req_start_lat 			number(10,7), 	--어디서 배달시작(위도)
-	req_start_lng			number(10,7), 	--어디서 배달시작(경도)
 	req_start_addr			varchar2(100),	--시작 주소
 	req_end_lat				number(10,7), 	--어디로 배달(위도)
 	req_end_lng				number(10,7),	--어디로 배달(경도)
 	req_end_addr			varchar2(100),	--도착 주소
-	order_id				varchar2(20)
+	req_order					varchar2(20)
 	reg_dt			timestamp		default sysdate not null,	--등록시점
 	upt_dt			timestamp		default sysdate not null
 	--primary key (req_id, user_id)

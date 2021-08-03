@@ -14,8 +14,11 @@ public interface DeliveryMapper {
 	public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);
 	
 	
-	public List<DeliveryRequestVO> searchRequest(@Param("curUser") Party curUser, 
-			@Param("radiusLatitude")double radiusLatitude, @Param("radiusLongitude") double radiusLongitude); 
+	public List<DeliveryRequestVO> searchDeliveryList(@Param("curUser") Party curUser );
+	
+	public List<DeliveryRequestVO> searchDeliveryRiderList(Party curUser);
+	
+	
 	public List<DeliveryRequestVO> matchingRequest(@Param("curUser") Party curUser);
 	
 	/** id 값으로 Post 객체 조회 */
@@ -24,6 +27,8 @@ public interface DeliveryMapper {
 	public DeliveryRequestVO findRequestById(String reqId);
 
 	public int updateRequest(@Param("requestId") String requestId,@Param("curUser") Party curUser);
+
+
 
 
 	//public List<DeliveryRequestVO> matchingRequest(@Param("curUser") Party curUser, @Param("riderStatus") RiderStatus valueOf);

@@ -125,12 +125,12 @@
 					values (#{party.userId}, #{storeId}, #{personType})
 			</when>
 			
-			<when test="#{personType}.equals('Rider')">
+			<when test="personType.equals('Rider')">
 				into b_accountability(owner_id, resp_id, acc_type)
 					values (#{party.userId}, 'BaeNom', #{personType})
 			</when>
 			
-			<when test="#{personType}.equals('Member')">
+			<when test="personType.equals('Member')">
 				into b_accountability(owner_id, resp_id, acc_type)
 					values (#{party.userId}, 'BaeNom', #{personType})
 			</when>

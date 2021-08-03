@@ -55,9 +55,6 @@
 	</select>
 	
 	
-	
-	
-	
 	<!-- public OrderList getOrderList(); -->
 	<select id="getOrderList" resultMap="orderMap">
 	<![CDATA[
@@ -73,7 +70,7 @@
 			select get_id(seq_order_id.nextval) from dual
 		</selectKey>
 		insert into b_orderList(order_id, member_id, store_id, order_msg)
-				values (#{orderList.id}, #{memberId}, 'store3', #{orderList.msg})
+				values (#{orderList.id}, #{memberId}, 'store2', #{orderList.msg})
 	</insert>
 	
 	<!-- public int insertDetailOrder(@Param("memberId") String memberId,

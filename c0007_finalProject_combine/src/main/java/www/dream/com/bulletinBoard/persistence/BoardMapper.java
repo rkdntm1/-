@@ -8,12 +8,6 @@ import www.dream.com.bulletinBoard.model.BoardVO;
 
 public interface BoardMapper {
 
-
-
 	public List<BoardVO> getCategoryList();
-
 	public BoardVO getCategory(@Param("categoryId") String categoryId);
-
-
-	
 }

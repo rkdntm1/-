@@ -5,16 +5,74 @@
 
 	<mapper namespace="www.dream.com.delivery.persistence.DeliveryMapper">
 		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="dmRequest"
-		extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
-			<id property="reqId" column="req_id"></id>
-			<result property="storeId" column="store_id"></result>
+				extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+			<id property="id" column="id"></id>
+			
+			<result property="descrim" column="descrim"></result>
+			
+			<association property="status" columnPrefix="st_"
+				resultMap="www.dream.com.delivery.model.DeliveryStatus.dmStatus">
+			</association>
+			
+			<association property="exception" columnPrefix="ex_"
+				resultMap="www.dream.com.delivery.model.DeliveryException.dmException">
+			</association>
+			
+	<!-- discriminator : 판별자. 상속 광련 활용 // 요청, 수행, 취소 // -->
+		<discriminator javaType="String" column="descrim">
+			<case value="request" resultMap="requestMap" />
+			<case value="perform" resultMap="performMap" />
+			<case value="cancel" resultMap="cancelMap" />
+		</discriminator>
+			
+		</resultMap>
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="requestMap">
+		
 			<result property="memberId" column="member_id"></result>
-			<result property="reqState" column="req_state"></result>
+			<result property="storeId" column="store_id"></result>
+			<result property="orderContents" column="order_contents"></result>
 			<result property="endLat" column="req_end_lat"></result>
 			<result property="endLng" column="req_end_lng"></result>
-			<result property="endAdd" column="req_end_addr"></result>
-			<result property="orderId" column="order_id"></result>
+			<result property="endAddr" column="req_end_addr"></result>
+			<result property="deliveryTip" column="req_delivery_tip"></result>
+			<result property="cookedTime" column="req_cooked_time"></result>
+		</resultMap>
+		
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryPerformVO" id="performMap">
+			<result property="reqId" column="req_id"></result>
+			<result property="riderId" column="rider_id"></result>
+			<result property="pickupDate" column="pickup_dt"></result>
+		</resultMap>
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryCancel" id="cancelMap">
+		</resultMap>
+		
+			<!-- ###########  배달 상태 정보 관련 정의 영역  ######### -->
+	<resultMap type="www.dream.com.delivery.model.DeliveryStatus" id="dmStatus">
+		<id property="" column=""></id>
+		<result property="" column=""></result>
 	</resultMap>
+		
+		<!-- ###########  예외 정보 관련 정의 영역  ######### -->
+	<resultMap type="www.dream.com.delivery.model.DeliveryException" id="dmException">
+			<id property="" column=""></id>
+			<result property="" column=""></result>
+			<association property="period" columnPrefix="pd_"
+				resultMap="www.dream.com.delivery.model.DeliveryPeriod.dmPeriod">
+			</association>
+	</resultMap>	
+
+		<!-- ###########  예외 기간 정보 관련 정의 영역  ######### -->
+	<resultMap type="www.dream.com.delivery.model.DeliveryPeriod" id="dmPeriod">
+		<id property="" column=""></id>
+		<result property="" column=""></result>
+	</resultMap>
+
+
+
+<!--  ================================================================================================================== -->
 
 <!-- public List<DeliveryRequestVO> getList(@Param("boardId") int boardId);-->
 	<select id="getList" resultMap="dmRequest">
