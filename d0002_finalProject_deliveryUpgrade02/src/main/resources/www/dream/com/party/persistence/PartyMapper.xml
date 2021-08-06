@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="www.dream.com.party.persistence.PartyMapper">
+	<!-- resultMap : DB Table 정의 내역과 객체 정의 내역에 있어 mismatch(부조화)가 있을 시 이를 연동, 
+		짝 지어주는 정보를 정의함 -->
+	<resultMap type="www.dream.com.party.model.Party" id="partyMap"
+		extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+		<id property="userId" column="user_id"></id>
+		<result property="userName" column="user_name"></result>
+		<result property="birthDate" column="birth_dt"></result>
+		<result property="descrim" column="descrim"></result>
+		
+		<collection property="accountability" columnPrefix="ac_"
+			resultMap="accountabilityMap">
+		</collection> 
+		
+		
+		<!-- collection : Master-Detail(1:N) 구조에서 Join Query를 통하여 
+		여러 테이블에 들어 있는 정보를 한번에 받아서 java List 속성에 부품 객체를 만들어 조회하는 방법
+		columnPrefix:각 Table에 들어 있는 컬럼 이름이 중복 될 때 Column Alias를 SQL에서 달고
+		이를 객체 구성 시 참조하도록 지원함
+		-->
+		<collection property="listContactPoint" columnPrefix="cp_" 
+				resultMap="contactPointMap">
+		</collection>
+		
+		<collection property="listLocation" columnPrefix="l_" 
+				resultMap="locationMap">
+		</collection>
+		
+		<!-- discriminator : 판별자. 상속 광련 활용 -->
+		<discriminator javaType="String" column="descrim">
+			<case value="Person" resultMap="personResultMap" />
+			<case value="Organization" resultMap="organizationResultMap" />
+		</discriminator>
+	</resultMap>
+	
+	<resultMap id="personResultMap"
+		type="www.dream.com.party.model.Person" extends="partyMap">
+		<result property="userPwd" column="user_pwd"></result>
+		<result property="sex" column="sex"></result>
+		<result property="state" column="state"></result>
+	</resultMap>
+	
+	<resultMap id="organizationResultMap"
+		type="www.dream.com.party.model.Organization" extends="partyMap">
+		<result property="storeInfo" column="store_info"></result>
+	</resultMap>
+	
+
+	<resultMap type="www.dream.com.party.model.ContactPoint" id="contactPointMap" 
+	    extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+		<id property="contactPointType" column="contact_point_type"></id>
+		<result property="info" column="info"></result>
+	</resultMap>
+	
+	<resultMap type="www.dream.com.party.model.Location" id="locationMap" 
+		extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+		<id property="userId" column="user_id"></id>
+		<result property="longitude" column="longitude"></result>
+		<result property="latitude" column="latitude"></result>
+		<result property="latestDate" column="latest_dt"></result>
+	</resultMap>
+	
+	<resultMap type="www.dream.com.party.model.Accountability" id="accountabilityMap">
+		<id property="ownerId" column="owner_id"></id>
+		<id property="respId" column="resp_id"></id>
+		<id property="accType" column="acc_type"></id>
+		<result property="fromDate" column="from_date"></result>
+		<result property="thruDate" column="thru_date"></result>
+	</resultMap>
+
+
+	<!-- public List<Party> getList(); -->
+	<select id="getList" resultMap="partyMap">
+	<![CDATA[
+	select p.*,
+	       cp.user_id cp_user_id, cp.contact_point_type cp_contact_point_type, 
+	       cp.info cp_info, cp.reg_dt cp_reg_dt, cp.upt_dt cp_upt_dt 
+	  from b_party p left outer join b_contact_point cp on p.user_id = cp.user_id 
+	]]>
+	</select>
+	
+	<!-- public Person findPartyByUserId(String userId); -->
+	<select id="findPartyByUserId" resultMap="personResultMap">
+	<![CDATA[
+	select p.user_id, p.user_name, p.user_pwd, a.owner_id ac_owner_id, a.resp_id ac_resp_id, a.acc_type ac_acc_type  
+      from b_party p , b_accountability a
+     where p.user_id = #{userId}
+       and #{userId} = a.owner_id
+	]]>
+	</select>
+	
+	<!-- public int IDDuplicateCheck(@Param("userId") String userId); -->
+	<select id="IDDuplicateCheck" resultType="int">
+	<![CDATA[
+		select count(*)
+		  from b_party
+		 where user_id = #{userId}
+	]]>
+	</select>
+	
+	<!-- ###########회원관리 관련 정의 영역########## -->
+	<!-- public void joinMember(@Param("party") Person person, @Param("personType") String personType,@Param("storeId") String storeId); -->
+	<insert id="joinMember">
+		insert all 
+		    into b_party(user_id, user_pwd, user_name, birth_dt, sex, descrim)
+				values (#{party.userId}, #{party.userPwd}, #{party.userName}, #{party.birthDate}, #{party.sex}, #{party.descrim})
+		   <foreach collection="party.listContactPoint" item="cp">
+			into b_contact_point(user_id, contact_point_type, info)
+				values (#{party.userId}, #{cp.contactPointType} , #{cp.info})
+    	   </foreach>
+    	   into b_location(user_id, longitude, latitude)
+				values (#{party.userId}, #{party.listLocation[0].longitude} , #{party.listLocation[0].latitude})
+		   into b_accountability(owner_id, resp_id, acc_type)
+					values (#{party.userId}, 'BaeNom', 'MEMBER')
+		<choose>
+			<when test="personType.equals('CEO')">
+				into b_accountability(owner_id, resp_id, acc_type)
+					values (#{party.userId}, #{storeId}, #{personType})
+			</when>
+			
+			<when test="personType.equals('RIDER')">
+				into b_accountability(owner_id, resp_id, acc_type)
+					values (#{party.userId}, 'BaeNom', #{personType})
+			</when>
+			
+		</choose>
+		
+		select * from dual
+	</insert>
+	
+	<!-- public String findDescrimByUserId(String classifyName); -->
+	<select id="findDescrimByUserId" resultMap="cpMap">
+	<![CDATA[
+	select *
+	  from b_party
+	]]>
+	</select>
+	
+	<!-- public int setPwd(Party p); -->
+	<update id="setPwd">
+	update b_party 
+	  set user_pwd = #{userPwd}
+	 where user_id = #{userId}
+	</update>
+	
+	
+	<!-- ###########연락처 관련 정의 영역########## -->
+	<resultMap type="www.dream.com.party.model.ContactTypeVO" id="cpMap">
+		<id property="contactPointType" column="contact_point_type"></id>
+		<result property="description" column="description"></result>
+	</resultMap>
+	
+	<!-- ###########AccountabilityType 관련 정의 영역########## -->
+	<resultMap type="www.dream.com.party.model.AccountabilityTypeVO" id="acMap">
+		<id property="accType" column="acc_type"></id>
+		<result property="description" column="description"></result>
+	</resultMap>
+	
+	
+	<!-- public List<ContactTypeVO> getCPTypeList(); -->
+	<select id="getCPTypeList" resultMap="cpMap">
+	<![CDATA[
+	select * from b_contact_point_type
+	]]>
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
