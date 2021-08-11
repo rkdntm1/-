@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+	<mapper namespace="www.dream.com.delivery.persistence.DeliveryMapper">
+		<resultMap type="www.dream.com.delivery.model.DeliveryVO" id="dmDelivery"
+				extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+			<id property="id" column="id"></id>
+			
+		<association property="status" columnPrefix="st_" resultMap="dmDescrim">
+		</association>
+			
+		<discriminator javaType="String" column="status">
+			<case value="request" resultMap="requestMap" />
+			<case value="perform" resultMap="performMap" />
+			<case value="inTransit" resultMap="inTransitMap" />
+			<case value="completed" resultMap="completedMap" />
+			<case value="cancel" resultMap="cancelMap" />
+		</discriminator>
+			
+			
+	    <!-- <association property="exception" columnPrefix="ex_"
+				resultMap="www.dream.com.delivery.model.DeliveryException.dmException">
+		</association> -->
+		</resultMap>
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="requestMap" extends="dmDelivery">
+			<result property="memberId" column="member_id"></result>
+			<result property="storeId" column="store_id"></result>
+			<result property="orderContents" column="order_contents"></result>
+			<result property="endLat" column="req_end_lat"></result>
+			<result property="endLng" column="req_end_lng"></result>
+			<result property="endAddr" column="req_end_addr"></result>
+			<result property="deliveryTip" column="req_delivery_tip"></result>
+			<result property="cookedTime" column="req_cooked_time"></result>
+		</resultMap>
+		
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryPerformVO" id="performMap" extends="dmDelivery">
+			<result property="reqId" column="req_id"></result>
+			<result property="riderId" column="rider_id"></result>
+			
+			<association property="request" columnPrefix="rq_" resultMap="requestMap">
+		</association>
+			
+		</resultMap>
+		
+			<!-- ###########  배달 상태 정보 관련 정의 영역  ######### -->
+	<resultMap type="www.dream.com.delivery.model.DeliveryStatus" id="dmDescrim">
+		<id property="status" column="status"></id> 
+		<result property="description" column="description"></result>
+		
+	</resultMap>
+	
+			
+	<resultMap type="www.dream.com.delivery.model.DeliveryinTransit" 
+		id="inTransitMap" extends="dmDelivery">
+	</resultMap>
+	
+	<resultMap type="www.dream.com.delivery.model.DeliveryCompleted" 
+		id="completedMap" >
+		<result property="riderId" column="rider_id"></result>
+		<result property="totalTip" column="total_tip"></result>
+		<result property="cnt" column="cnt"></result>
+		<result property="distance" column="distance"></result>
+	</resultMap>
+	
+	<resultMap type="www.dream.com.delivery.model.DeliveryCancel" 
+		id="cancelMap" extends="dmDelivery">
+	</resultMap>
+		
+		<!-- ###########  예외 정보 관련 정의 영역  ######### -->
+<!-- 	<resultMap type="www.dream.com.delivery.model.DeliveryException" id="dmException">
+			<id property="" column=""></id>
+			<result property="" column=""></result>
+			<association property="period" columnPrefix="pd_"
+				resultMap="www.dream.com.delivery.model.DeliveryPeriod.dmPeriod">
+			</association>
+	</resultMap>	 -->
+
+		<!-- ###########  예외 기간 정보 관련 정의 영역  ######### -->
+<!-- 	<resultMap type="www.dream.com.delivery.model.DeliveryPeriod" id="dmPeriod">
+		<id property="" column=""></id>
+		<result property="" column=""></result>
+	</resultMap>
+ -->
+
+
+<!--  ================================================================================================================== -->
+
+<!-- public List<DeliveryVO> getList(@Param("userId") String userId, @Param("descrim") String descrim);-->
+	<select id="getList" resultMap="dmDelivery">
+		<choose>
+			<when test="descrim.status.equals('request')">
+   select d.*, st.*
+        from b_delivery d left join b_delivery_status st on d.status = st.status
+			</when>
+        
+			<when test="descrim.status.equals('perform')">
+   select a.member_id , p.info cp_info , a.order_contents , a.req_end_addr , a.req_delivery_tip , a.req_cooked_time , b.rider_id 
+     from b_delivery a, b_delivery b, b_location l, b_contact_point p
+    where a.id = b.req_id
+      and a.store_id = l.user_id
+      and l.user_id = p.user_id
+      and b.rider_id = #{userId}
+      and b.descrim = #{descrim}
+      and p.contact_point_type = 'address'   
+			</when>
+		</choose>
+	</select>
+
+
+
+<!-- public List<DeliveryCompleted> getRiderPriority(@Param("storeId") String storeId); -->
+<select id="getRiderPriority" resultMap="completedMap">
+<![CDATA[
+SELECT rider_id,  SUM(req_delivery_tip) total_tip, count(case when status = 'completed' then rider_id end) cnt, distance distance
+  FROM  ( SELECT *
+            FROM b_delivery d, ( SELECT distinct rl.*,
+            
+            								  -- 가게를 중심으로 'RIDER'들이 얼만큼 떨어져 있는지 거리를 계산한다.(distance)
+                                        (6371 * acos( cos( sl.latitude * 3.14/180 ) * cos( ( l.latitude * 3.14/180 ))  
+                                              *  cos( ( rl.longitude * 3.14/180 ) - ( sl.longitude * 3.14/180 ) )  
+                                              +  sin( sl.latitude * 3.14/180 ) * sin( rl.latitude * 3.14/180 ) ) ) distance  
+                                        
+                                              -- 배달요청하는 가게 id와 위경도 정보(sl)
+                                   FROM (select d.store_id, l.latitude, l.longitude 
+                                               from b_location l left join b_delivery d  on l.user_id = d.store_id 
+                                              where d.store_id = #{storeId}) sl, 
+                                              
+                                              -- accType이 'RIDER'인 사람의 id와 위경도 정보(rl)
+                                        (select distinct l.* 
+                                           from b_location l left join b_accountability acc on l.user_id = acc.owner_id  
+                                          where acc.acc_type = 'RIDER'
+                                          
+                                          	  -- 현재  활동중인 라이더들을 조회 (sysdate - 1분) 
+                                          	  -- 즉 1분전에 움직임을 보인 라이더들을 조회
+                                            and l.reg_dt >= sysdate - (1/1440) ) rl
+                                ) DATA
+           WHERE d.rider_id = DATA.user_id
+           
+           		-- 거리 단위는km 이고 1km 반경 내의 있는 DATA들을 조회한다.
+             AND DATA.distance < 1
+          )  
+             
+ GROUP BY rider_id, distance order by total_tip, cnt, distance 
+]]>
+</select>
+	
+
+
+
+
+
+<!-- public List<DeliveryRequestVO> searchDeliveryList(@Param("curUser") Party curUser );  -->
+	<select id="searchDeliveryList" resultMap="dmDelivery">
+	<![CDATA[
+	select * 
+	  from b_delivery    
+ 	 where store_id = #{curUser.userId}
+       and descrim = '요청' 
+	]]>
+	</select>
+	
+
+<!-- 
+public List<DeliveryRequestVO> searchDeliveryRiderList(Party curUser);   -->
+	<select id="searchDeliveryRiderList" resultMap="dmDelivery">
+	<![CDATA[
+	select * 
+     from b_delivery a, b_delivery b, b_location l, b_contact_point p
+    where a.id = b.req_id
+      and a.store_id = l.user_id 
+      and l.user_id = p.user_id
+      and b.rider_id = 'rider2'
+      ;
+	]]>
+	</select>
+	
+	
+	
+	<!-- public List<DeliveryRequestVO> matchingRequest(@Param("curUser") Party curUser, @Param("riderStatus") RiderStatus valueOf); -->
+	<select id="matchingRequest" resultMap="dmDelivery">
+		<![CDATA[
+			select *
+			  from b_request 
+		     where rider_id = #{curUser.userId}
+		     and req_state = #{riderStatus}
+		]]>
+	</select>
+	
+	
+	
+	
+	
+
+		
+
+	<!-- 
+	public int deleteReplyById(String id);
+	특정 게시글에 달린 모든 댓글을 한번에 지웁니다. start with connected by Query 에 비하여 성능이 높습니다.
+	
+		<delete id="deleteReplyById">
+		delete from b_reply where id like #{id} || '%'
+		</delete>
+	
+	 -->
+
+	
+</mapper>
