@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+	<mapper namespace="www.dream.com.delivery.persistence.DeliveryMapper">
+		<resultMap type="www.dream.com.delivery.model.DeliveryVO" id="dmDelivery"
+				extends="www.dream.com.common.persistence.CommonMngVOMapper.commonMngVOMap">
+			<id property="id" column="id"></id>
+			
+		<association property="status" columnPrefix="st_" resultMap="dmDescrim">
+		</association>
+			
+		<discriminator javaType="String" column="status">
+			<case value="request" resultMap="requestMap" />
+			<case value="perform" resultMap="performMap" />
+			<case value="inTransit" resultMap="inTransitMap" />
+			<case value="completed" resultMap="completedMap" />
+			<case value="cancel" resultMap="cancelMap" />
+		</discriminator>
+			
+			
+	    <!-- <association property="exception" columnPrefix="ex_"
+				resultMap="www.dream.com.delivery.model.DeliveryException.dmException">
+		</association> -->
+		</resultMap>
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryRequestVO" id="requestMap" extends="dmDelivery">
+			<result property="memberId" column="member_id"></result>
+			<result property="storeId" column="store_id"></result>
+			<result property="orderContents" column="order_contents"></result>
+			<result property="endLat" column="req_end_lat"></result>
+			<result property="endLng" column="req_end_lng"></result>
+			<result property="endAddr" column="req_end_addr"></result>
+			<result property="deliveryTip" column="req_delivery_tip"></result>
+			<result property="cookedTime" column="req_cooked_time"></result>
+		</resultMap>
+		
+		
+		<resultMap type="www.dream.com.delivery.model.DeliveryPerformVO" id="performMap" extends="dmDelivery">
+			<result property="reqId" column="req_id"></result>
+			<result property="riderId" column="rider_id"></result>
+			
+			<association property="request" columnPrefix="rq_" resultMap="requestMap">
+		</association>
+			
+		</resultMap>
+		
+			<!-- ###########  배달 상태 정보 관련 정의 영역  ######### -->
+	<resultMap type="www.dream.com.delivery.model.DeliveryStatus" id="dmDescrim">
+		<id property="status" column="status"></id> 
+		<result property="description" column="description"></result>
+		
+	</resultMap>
+	
+			
+	<resultMap type="www.dream.com.delivery.model.DeliveryinTransit" 
+		id="inTransitMap" extends="performMap">
+	</resultMap>
+	
+	<resultMap type="www.dream.com.delivery.model.DeliveryCompleted" 
+		id="completedMap" extends="performMap" >
+		<!-- <result property="riderId" column="rider_id"></result>
+		<result property="totalTip" column="total_tip"></result>
+		<result property="cnt" column="cnt"></result>
+		<result property="distance" column="distance"></result> -->
+	</resultMap>
+	
+	<resultMap type="www.dream.com.delivery.model.DeliveryCancel" 
+		id="cancelMap" extends="dmDelivery">
+	</resultMap>
+		
+		<!-- ###########  예외 정보 관련 정의 영역  ######### -->
+<!-- 	<resultMap type="www.dream.com.delivery.model.DeliveryException" id="dmException">
+			<id property="" column=""></id>
+			<result property="" column=""></result>
+			<association property="period" columnPrefix="pd_"
+				resultMap="www.dream.com.delivery.model.DeliveryPeriod.dmPeriod">
+			</association>
+	</resultMap>	 -->
+
+		<!-- ###########  예외 기간 정보 관련 정의 영역  ######### -->
+<!-- 	<resultMap type="www.dream.com.delivery.model.DeliveryPeriod" id="dmPeriod">
+		<id property="" column=""></id>
+		<result property="" column=""></result>
+	</resultMap>
+ -->
+
+
+<!--  ================================================================================================================== -->
+<!-- public List<DeliveryRequestVO> getList1(); -->
+<select id="getList1" resultMap="requestMap">
+	select d.*, s.status st_status
+	  from b_delivery d, b_delivery_status s 
+	 where d.status = s.status
+</select>
+
+<!-- public List<DeliveryVO> getList(@Param("userId") String userId, @Param("descrim") DeliveryStatus status); -->
+<select id="getList" resultMap="dmDelivery">
+	
+	<choose>
+	
+		<when test="descrim.status.equals('request')">
+   	  	  select d.*, st.*
+	        from b_delivery d left join b_delivery_status st on d.status = st.status
+	       where d.store_id = #{userId}
+	         and st.status = #{descrim.status} 
+		</when>
+       
+        <otherwise>
+	      select d.*, st.status st_status
+	        from b_delivery d left join b_delivery_status st on d.status = st.status
+	       where d.rider_id = #{userId}  
+        </otherwise>
+        
+	</choose>
+	
+</select>
+
+<!--         
+	<when test="status.equals('perform')">
+   select a.member_id , p.info cp_info , a.order_contents , a.req_end_addr , a.req_delivery_tip , a.req_cooked_time , b.rider_id 
+     from b_delivery a, b_delivery b, b_location l, b_contact_point p
+    where a.id = b.req_id
+      and a.store_id = l.user_id
+      and l.user_id = p.user_id
+      and b.rider_id = #{userId}
+      and b.descrim = #{descrim}
+      and p.contact_point_type = 'address'   
+			</when> -->
+
+<!--  =============== 라이더의 우선순위를 뽑는다. ================================================================================================ -->
+
+<!-- public List<String> getRiderPriority(@Param("storeId") String storeId); -->
+<select id="getRiderPriority" resultType="string">
+<![CDATA[
+ SELECT user_id,  NVL(SUM(case when status = 'completed' then req_delivery_tip end), 0) total_tip ,  count(case when status = 'completed' then user_id end) cnt, distance distance
+   FROM  ( select * 
+   			 from
+   			 		-- b_delivery (d) 와 가게로부터의 거리가 계산된 라이더데이터(DATA)를 outer join함 (cls)
+		 		 ( select *
+		 		     from b_delivery d right outer join 
+		 		 				( SELECT distinct rl.*,
+		            
+									  -- 가게를 중심으로 'RIDER'들이 얼만큼 떨어져 있는지 거리를 계산한다.(distance)
+		                        (6371 * acos( cos( sl.latitude * 3.14/180 ) * cos( ( rl.latitude * 3.14/180 ))  
+		                              *  cos( ( rl.longitude * 3.14/180 ) - ( sl.longitude * 3.14/180 ) )  
+		                              +  sin( sl.latitude * 3.14/180 ) * sin( rl.latitude * 3.14/180 ) ) ) distance  
+		                    
+		                              -- 배달요청하는 가게 id와 위경도 정보(sl)
+		                            FROM (select distinct(d.store_id), l.latitude, l.longitude 
+		                                       from b_location l left join b_delivery d  on l.user_id = d.store_id 
+		                                      where d.store_id = #{storeId}) sl, 
+		                                      
+		                              -- accType이 'RIDER'인 사람의 id와 위경도 정보(rl)
+		                        (select distinct l.* 
+		                           from b_location l left join b_accountability acc on l.user_id = acc.owner_id  
+		                          where acc.acc_type = 'RIDER'
+		                          
+		                          	  -- 1분전에 움직임을 보인 라이더들을 조회(sysdate - 1/1440) 
+		                          	  -- 즉 현재 활동중인 라이더들을 조회 
+		                            and l.reg_dt >= sysdate - 5 ) rl
+		           				 ) DATA ON d.rider_id = DATA.user_id
+		   		 ) cls
+           
+               -- 거리 단위는km 이고 1km 반경 내의 있는 DATA들을 조회한다.
+            where cls.distance < 1 )
+             
+ GROUP BY user_id, distance ORDER BY total_tip, cnt, distance 
+]]>
+</select>
+	
+<!--  ======================  data  INSERT  in delivery Table ============================================================================================================================== -->
+
+
+<!-- public int insertRequest (@Param("request") DeliveryRequestVO request); -->
+	
+	<insert id="insertRequest">
+	
+		<selectKey keyProperty="request.id" order="BEFORE" resultType="string">
+			select get_id(SEQ_DELIVERY_ID.nextval) from dual
+		</selectKey>
+		
+		insert into b_delivery (id, status, member_id, store_id, order_contents, 
+		req_end_lat, req_end_lng, req_end_addr, req_delivery_tip, req_cooked_time)
+			values (#{request.id}, #{request.DESCRIM4REQUEST}, #{request.memberId}, #{request.storeId}, #{request.orderContents},
+			#{request.endLat}, #{request.endLng}, #{request.endAddr}, #{request.deliveryTip}, #{request.cookedTime})
+    
+	</insert>
+	
+	
+	<!-- public int insertPerform (@Param("perform") DeliveryPerformVO perform); -->
+	
+	<insert id="insertPerform">
+	
+		<selectKey keyProperty="perform.id" order="BEFORE" resultType="string">
+			select get_id(SEQ_DELIVERY_ID.nextval) from dual
+		</selectKey>
+		
+		insert into b_delivery (id, status, req_id, rider_id)
+			values (#{perform.id}, #{perform.DESCRIM4PERFORM}, #{perform.reqId},  #{perform.riderId})
+    
+	</insert>
+	
+	
+	<!-- public int insertInTransit (@Param("inTransit") DeliveryPerformVO inTransit); -->
+	
+	<insert id="insertInTransit">
+	
+		<selectKey keyProperty="inTransit.id" order="BEFORE" resultType="string">
+			select get_id(SEQ_DELIVERY_ID.nextval) from dual
+		</selectKey>
+		
+		insert into b_delivery (id, status, req_id, rider_id)
+			values (#{inTransit.id}, #{inTransit.DESCRIM4INTRANSIT}, #{inTransit.reqId},  #{inTransit.riderId})
+    
+	</insert>
+	
+	
+	<!-- public int insertCompleted (@Param("completed") DeliveryPerformVO completed); -->
+	
+	<insert id="insertCompleted">
+	
+		<selectKey keyProperty="completed.id" order="BEFORE" resultType="string">
+			select get_id(SEQ_DELIVERY_ID.nextval) from dual
+		</selectKey>
+		
+		insert into b_delivery (id, status, req_id, rider_id)
+			values (#{completed.id}, #{completed.DESCRIM4COMPLETED}, #{completed.reqId},  #{completed.riderId})
+    
+	</insert>
+	
+	
+	<!-- public int insertCancel (@Param("cancel") DeliveryCancel cancel); -->
+	
+	<insert id="insertCancel">
+	
+		<selectKey keyProperty="cancel.id" order="BEFORE" resultType="string">
+			select get_id(SEQ_DELIVERY_ID.nextval) from dual
+		</selectKey>
+		
+		insert into b_delivery (id, status, req_id, rider_id)
+			values (#{cancel.id}, #{completed.DESCRIM4COMPLETED}, #{completed.reqId},  #{completed.riderId})
+    
+	</insert>
+
+<!--  ============================================================================================================================================================================= -->
+	
+</mapper>
